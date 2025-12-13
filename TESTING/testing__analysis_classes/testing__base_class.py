@@ -3,6 +3,11 @@ from sa_models.base_class import SentimentAnalyserBase
 
 class testing__base_class(unittest.TestCase):
 
+    """
+    Testing the static score_to_label function, expecting to classify the scores
+    passed to it. Function has customisable thresholds for classification, and should
+    react accordingly.
+    """
     def test_score_to_label_positive(self):
         result = SentimentAnalyserBase.score_to_label(score=0.6)
         self.assertEqual(result, "positive")
