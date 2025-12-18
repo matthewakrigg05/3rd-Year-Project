@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from sa_models.sentiment_result import SentimentResult
+from src.sa_models.sentiment_result import SentimentResult
 
 
 # Abstract base class for the analysis methods
