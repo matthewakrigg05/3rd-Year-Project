@@ -1,5 +1,4 @@
-# Created by venv; see https://docs.python.org/3/library/venv.html
-*
 .env
-.venv
 data.csv
+pyvenv.cfg
+notes.txt
