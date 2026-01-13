@@ -1,3 +1,6 @@
-.venv
-.idea
-RedditData.csv
+.env
+data.csv
+pyvenv.cfg
+notes.txt
+.vscode/
+__pycache__/
