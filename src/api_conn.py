@@ -11,9 +11,3 @@ url = "https://api.twitterapi.io/twitter/tweet/advanced_search?query=politics"
 headers = {
     "X-API-Key": f"{os.getenv("API_KEY")}"
 }
-
-# response = requests.get(url, headers=headers)
-
-# print(response.text)
-
-print(headers)

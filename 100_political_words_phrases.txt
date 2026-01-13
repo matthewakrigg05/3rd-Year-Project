@@ -1,0 +1,100 @@
+politics
+political
+government
+state
+nation
+policy
+governance
+constitution
+law
+legislation
+regulation
+bill
+reform
+democracy
+election
+elections
+vote
+voting
+campaign
+candidate
+opposition
+majority
+minority
+electorate
+parliament
+congress
+senate
+legislature
+executive
+judiciary
+prime minister
+president
+minister
+cabinet
+political party
+coalition
+movement
+activism
+lobbying
+think tank
+liberalism
+conservatism
+socialism
+capitalism
+populism
+nationalism
+authoritarianism
+federalism
+imperialism
+globalism
+power
+authority
+sovereignty
+foreign policy
+diplomacy
+international relations
+security
+military
+war
+sanctions
+human rights
+civil rights
+freedom
+liberty
+justice
+equality
+discrimination
+rule of law
+free speech
+protest
+economy
+economic policy
+taxation
+spending
+welfare
+public services
+privatisation
+inflation
+trade
+budget
+media
+journalism
+propaganda
+public opinion
+polling
+bias
+misinformation
+disinformation
+left-wing
+right-wing
+far-left
+far-right
+centre-left
+centre-right
+establishment
+elite
+culture war
+identity politics
+policy agenda
+political crisis

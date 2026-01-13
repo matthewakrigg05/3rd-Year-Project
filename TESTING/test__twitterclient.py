@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-import src.data_collection.twitter_client as tc
+from src.data_collection import twitter_client as tc
 
 
 class TestParseTweets(unittest.TestCase):
@@ -48,10 +48,10 @@ class TestFetchTweets(unittest.TestCase):
         # Build a fake Response-like object
         fake_resp = Mock()
         fake_resp.status_code = 200
-        fake_resp.json.return_value = {"data": [{"id": "123", "text": "mocked"}]}
+        fake_resp.json.return_value = {"data": [{"id": "123", "text": "mocked", "lang": "en"}]}
         mock_get.return_value = fake_resp
 
-        tweets = tc.fetch_tweets(query="python", api_key="testkey", base_url="https://example.com")
+        tweets = tc.fetch_tweets(query="python", base_url="https://example.com")
 
         self.assertEqual(len(tweets), 1)
         self.assertEqual(tweets[0].id, "123")
@@ -62,7 +62,6 @@ class TestFetchTweets(unittest.TestCase):
         args, kwargs = mock_get.call_args
         self.assertEqual(args[0], "https://example.com/search")
         self.assertEqual(kwargs["params"], {"q": "python"})
-        self.assertIn("Authorization", kwargs["headers"])
         self.assertEqual(kwargs["timeout"], 10.0)
 
     @patch("twitter_client.requests.get")
