@@ -1,11 +1,21 @@
 import unittest
+import re
 
 def extract_english_text(api_response):
-    return [
-        tweet["text"]
-        for tweet in api_response.get("tweets", [])
-        if tweet.get("lang") == "en" and "text" in tweet
-    ]
+    texts = []
+
+    for tweet in api_response.get("tweets", []):
+        if tweet.get("lang") != "en":
+            continue
+
+        text = tweet.get("text", "")
+        text = re.sub(r"@\w+", "", text)  # remove mentions
+        text = re.sub(r"\s+", " ", text).strip()
+
+        if text:
+            texts.append(text)
+
+    return texts
 
 
 class TestExtractEnglishText(unittest.TestCase):
@@ -55,7 +65,7 @@ class TestExtractEnglishText(unittest.TestCase):
                 {
                     "type": "tweet",
                     "id": "2010787084328714424",
-                    "text": "@NathanBrandWA She needs to be nowhere near politics.",
+                    "text": "@bananananananana She needs to be nowhere near politics.",
                     "lang": "en",
                     "author": {"userName": "tommyfcknshelby"},
                 },
@@ -70,5 +80,92 @@ class TestExtractEnglishText(unittest.TestCase):
         }
         self.assertEqual(
             extract_english_text(api_response),
-            ["@NathanBrandWA She needs to be nowhere near politics."]
+            ["She needs to be nowhere near politics."]
+        )
+    
+    def test_removes_single_mention(self):
+        api_response = {
+            "tweets": [
+                {"text": "@user Hello world", "lang": "en"}
+            ]
+        }
+        self.assertEqual(
+            extract_english_text(api_response),
+            ["Hello world"]
+        )
+
+    def test_removes_multiple_mentions(self):
+        api_response = {
+            "tweets": [
+                {"text": "@a @b @c This is a test", "lang": "en"}
+            ]
+        }
+        self.assertEqual(
+            extract_english_text(api_response),
+            ["This is a test"]
+        )
+
+    def test_collapses_newlines_and_tabs(self):
+        api_response = {
+            "tweets": [
+                {
+                    "text": "Hello\n\nworld\t\tthis   is   spaced",
+                    "lang": "en"
+                }
+            ]
+        }
+        self.assertEqual(
+            extract_english_text(api_response),
+            ["Hello world this is spaced"]
+        )
+
+    def test_drops_tweet_that_becomes_empty_after_cleaning(self):
+        api_response = {
+            "tweets": [
+                {"text": "@user1 @user2", "lang": "en"}
+            ]
+        }
+        self.assertEqual(
+            extract_english_text(api_response),
+            []
+        )
+
+    def test_preserves_punctuation_and_case(self):
+        api_response = {
+            "tweets": [
+                {
+                    "text": "@user Wow!!! This works, right?",
+                    "lang": "en"
+                }
+            ]
+        }
+        self.assertEqual(
+            extract_english_text(api_response),
+            ["Wow!!! This works, right?"]
+        )
+
+    def test_ignores_non_english_even_if_text_is_clean(self):
+        api_response = {
+            "tweets": [
+                {"text": "@user Bonjour le monde", "lang": "fr"},
+                {"text": "@user Hello world", "lang": "en"},
+            ]
+        }
+        self.assertEqual(
+            extract_english_text(api_response),
+            ["Hello world"]
+        )
+
+    def test_handles_realistic_long_reply(self):
+        api_response = {
+            "tweets": [
+                {
+                    "text": "@a @b Well I didn't read it,\n\nwhich is why I asked the question.",
+                    "lang": "en"
+                }
+            ]
+        }
+        self.assertEqual(
+            extract_english_text(api_response),
+            ["Well I didn't read it, which is why I asked the question."]
         )
