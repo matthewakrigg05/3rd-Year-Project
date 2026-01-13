@@ -1,6 +1,6 @@
 import unittest
-from sa_models.base_class import SentimentAnalyserBase
-from sa_models.sentiment_result import SentimentResult
+from src.sa_models.base_class import SentimentAnalyserBase
+from src.sa_models.sentiment_result import SentimentResult
 
 
 class testing__base_class(unittest.TestCase):
