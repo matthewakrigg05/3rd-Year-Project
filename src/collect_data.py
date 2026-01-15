@@ -17,8 +17,7 @@ if __name__ == "__main__":
         run_data_collection_pipeline(
             wordlist_file="100_political_words_phrases.txt",
             output_file="collected_tweets.csv",
-            target_min=50000,
-            target_max=60000
+            target_max=100000
         )
     except KeyboardInterrupt:
         print("\nCollection interrupted by user.")

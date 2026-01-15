@@ -63,7 +63,7 @@ def collect_and_save(words: List[str],
         except Exception as e:
             print(f"Error fetching for '{word}': {e}")
             continue
-        
+
 
 def append_to_csv(data: List[Dict[str, Any]], output_file: str):
     """
@@ -101,7 +101,6 @@ def append_to_csv(data: List[Dict[str, Any]], output_file: str):
 
 def run_data_collection_pipeline(wordlist_file: str = "100_political_words_phrases.txt", 
                                 output_file: str = "collected_tweets.csv",
-                                target_min: int = 50000,
                                 target_max: int = 60000):
     """
     Run the full data collection pipeline until target tweet count is reached.
@@ -122,14 +121,7 @@ def run_data_collection_pipeline(wordlist_file: str = "100_political_words_phras
             print(f"Target reached! Collected {current_count} tweets.")
             break
         
-        if current_count >= target_min:
-            print(f"Minimum target reached ({current_count}). Collecting a bit more...")
-            # Collect for a few more words to reach towards max
-            remaining = min(10, len(words))  # Collect for 10 words or all
-            words_to_use = random.sample(words, remaining)
-        else:
-            # Shuffle words for variety
-            words_to_use = random.sample(words, len(words))
+        words_to_use = random.sample(words, len(words))
         
         print(f"Collecting batch for {len(words_to_use)} words...")
         collect_and_save(words_to_use, output_file)
