@@ -37,3 +37,17 @@ class TestCleanText(unittest.TestCase):
             remove_mentions(text),
             ["Wow!!! This works, right?"]
         )
+
+    def test_removes_urls(self):
+        text = ["Check this out: https://example.com @user"]
+        self.assertEqual(remove_mentions(text), ["Check this out: https://example.com"])
+
+    def test_collapse_whitespace_handles_empty_after_cleaning(self):
+        text = ["   ", "\t\n"]
+        self.assertEqual(collapse_whitespace(text), [])
+
+    def test_full_cleaning_pipeline(self):
+        text = ["@user   Hello\n\nworld   https://link.com"]
+        cleaned = remove_mentions(text)
+        cleaned = collapse_whitespace(cleaned)
+        self.assertEqual(cleaned, ["Hello world https://link.com"])

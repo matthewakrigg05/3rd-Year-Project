@@ -1,7 +1,13 @@
 def extract_english_text(api_response):
     texts = []
 
-    for tweet in api_response.get("tweets", []):
+    tweets = api_response.get("tweets", [])
+    if not isinstance(tweets, list):
+        return texts
+
+    for tweet in tweets:
+        if not isinstance(tweet, dict):
+            continue
         if tweet.get("lang") != "en":
             continue
 

@@ -65,6 +65,17 @@ class TestExtractEnglishText(unittest.TestCase):
             extract_english_text(api_response),
             ["@bananananananana She needs to be nowhere near politics."]
         )
-    
-    
 
+    def test_extract_english_text_handles_non_list_tweets(self):
+        api_response = {"tweets": "not a list"}
+        self.assertEqual(extract_english_text(api_response), [])
+
+    def test_extract_english_text_handles_missing_fields_in_tweets(self):
+        api_response = {"tweets": [{}]}  # empty dict
+        self.assertEqual(extract_english_text(api_response), [])
+
+    def test_extract_english_text_with_many_tweets(self):
+        tweets = [{"text": f"Tweet {i}", "lang": "en"} for i in range(1000)]
+        api_response = {"tweets": tweets}
+        result = extract_english_text(api_response)
+        self.assertEqual(len(result), 1000)
