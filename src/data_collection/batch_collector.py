@@ -27,7 +27,7 @@ def count_csv_rows(csv_file: str) -> int:
 
 def collect_and_save(words: List[str], 
                      output_file: str, 
-                     delay: float = 10.0):
+                     delay: float = 0.2):
     """
     Collect tweets for each word in the list, process them, and append to CSV.
     
