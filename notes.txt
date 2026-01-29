@@ -1,12 +1,12 @@
 First:
 - Need a word list [DONE]
-- A way to iterate through the word list collecting tweets
-- Do-While until enough data?
+- A way to iterate through the word list collecting tweets [DONE]
+- Do-While until enough data [DONE]
 
 What needs to happen before cleaning of data:
-- intake information
-- save information -> must be a tweet, in en, length > 0
+- intake information [DONE]
+- save information -> must be a tweet, in en, length > 0 [DONE]
 
 From here needs cleaning:
-- Manage @'s so they're blocked 
-- Emojis handled
+- Manage @'s so they're blocked [DONE]
+- Emojis handled 
