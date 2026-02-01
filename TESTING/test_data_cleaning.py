@@ -105,6 +105,22 @@ class TestCapRepeatedPunct(unittest.TestCase):
     def test_other_punct_unchanged(self):
         self.assertEqual(cap_repeated_punct("...."), "....")  # only ! and ? are handled
 
+class TestNormalizeWhitespace(unittest.TestCase):
+    def test_collapses_spaces(self):
+        self.assertEqual(normalize_whitespace("a   b"), "a b")
+
+    def test_collapses_tabs_newlines(self):
+        self.assertEqual(normalize_whitespace("a\tb\nc"), "a b c")
+
+    def test_strips_ends(self):
+        self.assertEqual(normalize_whitespace("  a b  "), "a b")
+
+    def test_empty_string(self):
+        self.assertEqual(normalize_whitespace(""), "")
+
+    def test_only_whitespace(self):
+        self.assertEqual(normalize_whitespace("   \n\t  "), "")
+
 
 class TestPreprocessTweet(unittest.TestCase):
     def test_remove_urls(self):
