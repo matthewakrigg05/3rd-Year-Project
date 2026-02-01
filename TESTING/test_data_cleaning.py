@@ -87,6 +87,24 @@ class TestCapRepeatedLetters(unittest.TestCase):
         self.assertEqual(cap_repeated_letters("AAAAA"), "AAA")
         self.assertEqual(cap_repeated_letters("aaaaa"), "aaa")
 
+class TestCapRepeatedPunct(unittest.TestCase):
+    def test_caps_exclamation(self):
+        self.assertEqual(cap_repeated_punct("wow!!!!!!"), "wow!!!")
+
+    def test_caps_question(self):
+        self.assertEqual(cap_repeated_punct("what??????"), "what???")
+
+    def test_does_not_change_three_or_less(self):
+        self.assertEqual(cap_repeated_punct("!!!"), "!!!")
+        self.assertEqual(cap_repeated_punct("??"), "??")
+
+    def test_mixed_punct_runs_not_combined(self):
+        # "!?!!??" should only cap runs of same char, not merge them
+        self.assertEqual(cap_repeated_punct("!?!!!!??"), "!?!!!??")
+
+    def test_other_punct_unchanged(self):
+        self.assertEqual(cap_repeated_punct("...."), "....")  # only ! and ? are handled
+
 
 class TestPreprocessTweet(unittest.TestCase):
     def test_remove_urls(self):
