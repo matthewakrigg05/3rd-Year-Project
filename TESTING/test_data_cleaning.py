@@ -37,6 +37,17 @@ class TestReplaceEmoticons(unittest.TestCase):
         inp = "no emoticons here"
         self.assertEqual(replace_emoticons(inp), inp)    
 
+    def test_multiple_emoticons_all_replaced(self):
+        out = replace_emoticons("yay :) <3 :(")
+        self.assertIn("EMOTICON_smile", out)
+        self.assertIn("EMOTICON_heart", out)
+        self.assertIn("EMOTICON_sad", out)
+
+    def test_spacing_added_around_tokens(self):
+        # Your function returns surrounding spaces for safety.
+        out = replace_emoticons("hi:)")
+        self.assertIn(" EMOTICON_smile ", out)
+
 
 class TestPreprocessTweet(unittest.TestCase):
     def test_remove_urls(self):
