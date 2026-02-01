@@ -122,10 +122,74 @@ class TestNormalizeWhitespace(unittest.TestCase):
         self.assertEqual(normalize_whitespace("   \n\t  "), "")
 
 
-class TestPreprocessTweet(unittest.TestCase):
+class TestURLRemoval(unittest.TestCase):
     def test_remove_urls(self):
         text = ["Check this link: https://example.com and http://test.com"]
         self.assertEqual(
             remove_urls(text),
             ["Check this link:  and "]
         )
+
+
+class TestPreprocessTweet(unittest.TestCase):
+    def test_replaces_url_and_user(self):
+        inp = "Check this https://example.com @someone"
+        out = preprocess_tweet(inp)
+        self.assertIn("URL", out)
+        self.assertIn("USER", out)
+
+    def test_handles_hashtag_camelcase(self):
+        inp = "So good! #BestDayEver"
+        out = preprocess_tweet(inp)
+        self.assertIn("HASHTAG", out)
+        self.assertIn("Best Day Ever", out)
+
+    def test_handles_hashtag_lowercase(self):
+        inp = "So bad #worstdayever"
+        out = preprocess_tweet(inp)
+        self.assertIn("HASHTAG worstdayever", out)
+
+    def test_emoticons_converted(self):
+        inp = "great :)"
+        out = preprocess_tweet(inp)
+        self.assertIn("EMOTICON_smile", out)
+
+    def test_emojis_converted(self):
+        inp = "fun 😂"
+        out = preprocess_tweet(inp)
+        self.assertIn("EMOJI_", out)
+
+    def test_caps_repetition(self):
+        inp = "sooooo goooood!!!!!!"
+        out = preprocess_tweet(inp)
+        self.assertIn("sooo", out)
+        self.assertIn("goood", out)  # capped to 3 o's
+        self.assertIn("!!!", out)
+        self.assertNotIn("!!!!!!", out)
+
+    def test_preserves_case(self):
+        inp = "I LOVE THIS"
+        out = preprocess_tweet(inp)
+        self.assertIn("LOVE", out)
+
+    def test_removes_invisible_chars(self):
+        inp = "he\u200bllo"
+        out = preprocess_tweet(inp)
+        self.assertEqual(out, "hello")
+
+    def test_whitespace_is_normalized(self):
+        inp = "a   b\tc\n\n@x  https://t.co/x"
+        out = preprocess_tweet(inp)
+        self.assertEqual(out.count("  "), 0)  # no double spaces
+        self.assertIn("USER", out)
+        self.assertIn("URL", out)
+
+    def test_end_to_end_example(self):
+        inp = "RT @John: I LOOOOVE this movie 😂😂!!! https://t.co/xyz #BestDayEver"
+        out = preprocess_tweet(inp)
+        self.assertIn("USER", out)
+        self.assertIn("LOOOVE", out)  # capped from LOOOOVE? (already 3 O's) stays
+        self.assertIn("EMOJI_", out)
+        self.assertIn("!!!", out)
+        self.assertIn("URL", out)
+        self.assertIn("HASHTAG Best Day Ever", out)
