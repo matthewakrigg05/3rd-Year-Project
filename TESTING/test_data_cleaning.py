@@ -17,7 +17,25 @@ class TestSplitCamelHashtags(unittest.TestCase):
     def test_single_word_unchanged(self):
         self.assertEqual(split_camel_hashtag("Hello"), "Hello")
 
-    
+class TestReplaceEmoticons(unittest.TestCase):
+    def test_replaces_basic_smile(self):
+        self.assertIn("EMOTICON_smile", replace_emoticons("hi :)"))
+
+    def test_replaces_basic_sad(self):
+        self.assertIn("EMOTICON_sad", replace_emoticons("oh no :("))
+
+    def test_replaces_wink(self):
+        self.assertIn("EMOTICON_wink", replace_emoticons("ok ;)"))
+
+    def test_replaces_heart(self):
+        self.assertIn("EMOTICON_heart", replace_emoticons("love <3"))
+
+    def test_replaces_laugh(self):
+        self.assertIn("EMOTICON_laugh", replace_emoticons("haha :D"))
+
+    def test_does_not_change_text_without_emoticons(self):
+        inp = "no emoticons here"
+        self.assertEqual(replace_emoticons(inp), inp)    
 
 
 class TestPreprocessTweet(unittest.TestCase):
