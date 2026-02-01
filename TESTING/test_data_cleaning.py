@@ -68,6 +68,26 @@ class TestDemojizeToTokens(unittest.TestCase):
         self.assertNotIn(":", out)
         self.assertIn("EMOJI_", out)
 
+class TestCapRepeatedLetters(unittest.TestCase):
+    def test_caps_repeated_letters_to_three(self):
+        self.assertEqual(cap_repeated_letters("sooooo"), "sooo")
+
+    def test_does_not_change_three_or_less(self):
+        self.assertEqual(cap_repeated_letters("sooo"), "sooo")
+        self.assertEqual(cap_repeated_letters("soo"), "soo")
+
+    def test_caps_multiple_runs(self):
+        self.assertEqual(cap_repeated_letters("yesssss pleaaaseeee"), "yesss pleaaaseee")
+
+    def test_only_affects_letters(self):
+        self.assertEqual(cap_repeated_letters("1111!!!!"), "1111!!!!")
+
+    def test_mixed_case_runs(self):
+        # Only exact same letter repeats are capped; "AaAa" isn't a repeat run
+        self.assertEqual(cap_repeated_letters("AAAAA"), "AAA")
+        self.assertEqual(cap_repeated_letters("aaaaa"), "aaa")
+
+
 class TestPreprocessTweet(unittest.TestCase):
     def test_remove_urls(self):
         text = ["Check this link: https://example.com and http://test.com"]
