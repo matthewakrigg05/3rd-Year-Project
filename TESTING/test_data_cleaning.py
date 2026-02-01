@@ -47,7 +47,26 @@ class TestReplaceEmoticons(unittest.TestCase):
         # Your function returns surrounding spaces for safety.
         out = replace_emoticons("hi:)")
         self.assertIn(" EMOTICON_smile ", out)
+        
+class TestDemojizeToTokens(unittest.TestCase):
+    def test_converts_known_emoji_to_token(self):
+        # This requires the `emoji` package to be installed.
+        out = demojize_to_tokens("fun 😂")
+        self.assertIn("EMOJI_", out)
 
+    def test_leaves_plain_text_unchanged(self):
+        out = demojize_to_tokens("plain text")
+        self.assertEqual(out, "plain text")
+
+    def test_multiple_emojis(self):
+        out = demojize_to_tokens("😂🔥")
+        # We expect at least two emoji tokens
+        self.assertGreaterEqual(out.count("EMOJI_"), 2)
+
+    def test_emoji_token_format_has_no_colons(self):
+        out = demojize_to_tokens("😂")
+        self.assertNotIn(":", out)
+        self.assertIn("EMOJI_", out)
 
 class TestPreprocessTweet(unittest.TestCase):
     def test_remove_urls(self):
