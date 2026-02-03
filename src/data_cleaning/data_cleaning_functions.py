@@ -111,3 +111,54 @@ def remove_urls(texts):
             continue
         out.append(_URL_RE.sub("", t))
     return out
+
+_USER_RE = re.compile(r"@\w+")
+_HASHTAG_RE = re.compile(r"#(\w+)")
+
+def preprocess_tweet(text: str) -> str:
+    """Run lightweight preprocessing useful for downstream tasks.
+
+    - Remove invisible characters
+    - Replace URLs with 'URL'
+    - Replace user mentions with 'USER'
+    - Convert emoticons to tokens
+    - Convert emojis to tokens
+    - Convert hashtags to 'HASHTAG <text>' (split camel case when appropriate)
+    - Cap repeated letters and punctuation and normalize whitespace
+    """
+    if not text:
+        return text
+
+    # Remove zero-width / invisible characters
+    text = text.replace("\u200b", "")
+
+    # Replace URLs with a token
+    text = _URL_RE.sub("URL", text)
+
+    # Replace user mentions with USER
+    text = _USER_RE.sub("USER", text)
+
+    # Replace emoticons
+    text = replace_emoticons(text)
+
+    # Convert emojis
+    text = demojize_to_tokens(text)
+
+    # Replace hashtags: keep case for camel-case (split words), keep lowercase as-is
+    def _hashtag_repl(m):
+        tag = m.group(1)
+        if tag.islower():
+            return f"HASHTAG {tag}"
+        else:
+            return f"HASHTAG {split_camel_hashtag(tag)}"
+
+    text = _HASHTAG_RE.sub(_hashtag_repl, text)
+
+    # Cap repeated letters and punctuation
+    text = cap_repeated_letters(text)
+    text = cap_repeated_punct(text)
+
+    # Normalize whitespace
+    text = normalize_whitespace(text)
+
+    return text
