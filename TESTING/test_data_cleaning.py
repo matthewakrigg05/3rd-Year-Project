@@ -1,4 +1,5 @@
 import unittest
+from src.data_cleaning.data_cleaning_functions import *
 
 class TestSplitCamelHashtags(unittest.TestCase):
     def test_splits_camel_case(self):
