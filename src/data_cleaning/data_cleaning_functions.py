@@ -97,3 +97,17 @@ def normalize_whitespace(text: str) -> str:
         return text
     out = re.sub(r"\s+", " ", text).strip()
     return out
+
+_URL_RE = re.compile(r"https?://\S+|www\.\S+")
+
+def remove_urls(texts):
+    """Given a list of strings, remove URLs from each string and return the new list."""
+    if texts is None:
+        return texts
+    out = []
+    for t in texts:
+        if t is None:
+            out.append(t)
+            continue
+        out.append(_URL_RE.sub("", t))
+    return out
