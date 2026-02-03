@@ -77,3 +77,16 @@ def demojize_to_tokens(text: str) -> str:
     if out == text:
         return text
     return out
+
+def cap_repeated_letters(text: str) -> str:
+    """Cap repeated alphabetical characters to at most three in a row."""
+    if not text:
+        return text
+    return re.sub(r"([A-Za-z])\1{3,}", lambda m: m.group(1) * 3, text)
+
+
+def cap_repeated_punct(text: str) -> str:
+    """Cap repeated exclamation and question marks to at most three in a row."""
+    if not text:
+        return text
+    return re.sub(r"([!?])\1{3,}", lambda m: m.group(1) * 3, text)
