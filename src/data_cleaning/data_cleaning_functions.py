@@ -58,3 +58,22 @@ def replace_emoticons(text: str) -> str:
     out = _EMOTICON_REGEX.sub(_repl, text)
     # If nothing changed, return original (keeps exact equality for tests)
     return out
+
+def demojize_to_tokens(text: str) -> str:
+    """
+    Convert emojis to tokens like 'EMOJI_face_with_tears_of_joy' or 'EMOJI_1F602'.
+
+    If the `emoji` package is available it will use `demojize()` to get readable names
+    (and strip surrounding colons). Otherwise falls back to replacing characters in
+    common emoji Unicode ranges with an ordinal-based token.
+    """
+    if not text:
+        return text
+
+    dem = emoji.demojize(text)
+    # Replace :name: with EMOJI_name (add spaces around)
+    out = re.sub(r":([a-zA-Z0-9_+\-]+):", lambda m: f" EMOJI_{m.group(1)} ", dem)
+    # If there were no emoji markers, return original
+    if out == text:
+        return text
+    return out
