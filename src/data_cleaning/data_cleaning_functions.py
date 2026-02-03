@@ -90,3 +90,10 @@ def cap_repeated_punct(text: str) -> str:
     if not text:
         return text
     return re.sub(r"([!?])\1{3,}", lambda m: m.group(1) * 3, text)
+
+def normalize_whitespace(text: str) -> str:
+    """Collapse all whitespace (spaces, tabs, newlines) to single spaces and strip ends."""
+    if text is None:
+        return text
+    out = re.sub(r"\s+", " ", text).strip()
+    return out
