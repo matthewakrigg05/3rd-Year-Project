@@ -116,7 +116,8 @@ _USER_RE = re.compile(r"@\w+")
 _HASHTAG_RE = re.compile(r"#(\w+)")
 
 def preprocess_tweet(text: str) -> str:
-    """Run lightweight preprocessing useful for downstream tasks.
+    """
+    Run lightweight preprocessing useful for downstream tasks.
 
     - Remove invisible characters
     - Replace URLs with 'URL'

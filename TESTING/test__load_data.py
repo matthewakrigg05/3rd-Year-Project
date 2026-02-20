@@ -43,8 +43,3 @@ class TestCSVLoad(unittest.TestCase):
 			has_row = any(True for _ in reader)
 
 		self.assertTrue(has_row, "Expected at least one data row in CSV")
-
-
-if __name__ == "__main__":
-	unittest.main()
-
