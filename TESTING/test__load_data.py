@@ -1,7 +1,7 @@
 import csv
 import unittest
 from pathlib import Path
-from src.data_collection.csv_loader import iter_csv_chunks
+from src.data_loading import *
 import pandas as pd
 
 
@@ -77,5 +77,39 @@ class TestCSVLoad(unittest.TestCase):
 		for c in chunks:
 			self.assertIsInstance(c, pd.DataFrame)
 			total += len(c)
+
+		self.assertEqual(total, expected_rows)
+
+	def test_load_dataset_without_chunksize(self):
+		df = load_dataset(CSV_PATH)
+
+		self.assertIsInstance(df, pd.DataFrame)
+		self.assertListEqual(list(df.columns), ["word", "text"])
+
+	def test_load_dataset_with_chunksize(self):
+		with CSV_PATH.open(newline="", encoding="utf-8") as f:
+			reader = csv.reader(f)
+			next(reader)
+			expected_rows = sum(1 for _ in reader)
+
+		df = load_dataset(CSV_PATH, chunksize=25)
+
+		self.assertIsInstance(df, pd.DataFrame)
+		self.assertEqual(len(df), expected_rows)
+
+	def test_stream_dataset_yields_chunks_and_sums(self):
+		with CSV_PATH.open(newline="", encoding="utf-8") as f:
+			reader = csv.reader(f)
+			next(reader)
+			expected_rows = sum(1 for _ in reader)
+
+		# ensure generator yields DataFrame chunks and sums to expected rows
+		first = next(stream_dataset(CSV_PATH, chunksize=50))
+		self.assertIsInstance(first, pd.DataFrame)
+
+		total = 0
+		for chunk in stream_dataset(CSV_PATH, chunksize=50):
+			self.assertIsInstance(chunk, pd.DataFrame)
+			total += len(chunk)
 
 		self.assertEqual(total, expected_rows)
