@@ -1,6 +1,8 @@
 import csv
 import unittest
 from pathlib import Path
+from src.data_collection.csv_loader import iter_csv_chunks
+import pandas as pd
 
 
 CSV_PATH = Path(__file__).resolve().parents[1] / "collected_tweets.csv"
@@ -43,3 +45,37 @@ class TestCSVLoad(unittest.TestCase):
 			has_row = any(True for _ in reader)
 
 		self.assertTrue(has_row, "Expected at least one data row in CSV")
+
+	def test_load_csv_to_dataframe_returns_dataframe(self):
+		df = load_csv_to_dataframe(CSV_PATH)
+
+		self.assertIsInstance(df, pd.DataFrame)
+		self.assertListEqual(list(df.columns), ["word", "text"])
+		self.assertGreaterEqual(len(df), 1)
+
+	def test_dataframe_contains_expected_category(self):
+		df = load_csv_to_dataframe(CSV_PATH)
+
+		self.assertTrue(
+			(df["word"].str.lower() == "free speech").any(),
+			"Expected to find category 'free speech' in DataFrame",
+		)
+
+	def test_iter_csv_chunks_yields_dataframe_chunks(self):
+		# compute expected total rows in file (excluding header)
+		with CSV_PATH.open(newline="", encoding="utf-8") as f:
+			reader = csv.reader(f)
+			next(reader)
+			expected_rows = sum(1 for _ in reader)
+
+		# collect chunks (iterator may be lazy; materialise in test)
+		chunks = list(iter_csv_chunks(CSV_PATH, chunksize=50))
+
+		self.assertGreater(len(chunks), 0, "Expected iter_csv_chunks to yield at least one chunk")
+
+		total = 0
+		for c in chunks:
+			self.assertIsInstance(c, pd.DataFrame)
+			total += len(c)
+
+		self.assertEqual(total, expected_rows)
