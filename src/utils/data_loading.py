@@ -38,8 +38,7 @@ def load_csv_to_dataframe(path: PathLike,
 
 
 def iter_csv_chunks(path: PathLike, 
-                    chunksize: int = 10000, 
-                    usecols: list[str] | None = None) -> Iterator[pd.DataFrame]:
+                    chunksize: int = 5000) -> Iterator[pd.DataFrame]:
     """
     Lazily iterate over the CSV file yielding DataFrame chunks.
 
@@ -64,16 +63,13 @@ def iter_csv_chunks(path: PathLike,
         "encoding": "utf-8",
         "chunksize": chunksize,
     }
-    if usecols is not None:
-        read_kwargs["usecols"] = usecols
 
     for chunk in pd.read_csv(p, **read_kwargs):
         yield chunk
 
 
 def load_dataset(path: PathLike, 
-                 chunksize: int | None = None, 
-                 usecols: list[str] | None = None) -> pd.DataFrame:
+                 chunksize: int | None = None) -> pd.DataFrame:
     """
     Load the whole dataset into a pandas DataFrame.
 
@@ -92,23 +88,24 @@ def load_dataset(path: PathLike,
     - pandas.DataFrame containing the entire dataset (excluding header)
     """
     if chunksize is None:
-        return load_csv_to_dataframe(path, usecols=usecols)
+        return load_csv_to_dataframe(path)
 
     # Read in chunks and concatenate. This keeps peak memory lower than
     # reading everything at once.
     chunks = []
-    for chunk in iter_csv_chunks(path, chunksize=chunksize, usecols=usecols):
+    for chunk in iter_csv_chunks(path, chunksize=chunksize):
         chunks.append(chunk)
 
     if not chunks:
         # Return empty DataFrame with expected columns if file exists but has no rows
-        return pd.DataFrame(columns=usecols if usecols is not None else [])
+        return print("Warning: CSV file is empty. Returning empty DataFrame.")
 
     df = pd.concat(chunks, ignore_index=True)
     return df
 
 
-def stream_dataset(path: PathLike, chunksize: int = 10000, usecols: list[str] | None = None) -> Iterator[pd.DataFrame]:
+def stream_dataset(path: PathLike, 
+                   chunksize: int = 5000) -> Iterator[pd.DataFrame]:
     """
     Stream the CSV dataset as DataFrame chunks. Yields each chunk from
     `iter_csv_chunks` without accumulating them in memory.
@@ -117,5 +114,5 @@ def stream_dataset(path: PathLike, chunksize: int = 10000, usecols: list[str] | 
     feature extraction) and you want to avoid building a single large
     DataFrame.
     """
-    for chunk in iter_csv_chunks(path, chunksize=chunksize, usecols=usecols):
+    for chunk in iter_csv_chunks(path, chunksize=chunksize):
         yield chunk
