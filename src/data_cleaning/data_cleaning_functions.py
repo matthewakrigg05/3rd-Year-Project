@@ -1,5 +1,6 @@
 import re
 import emoji
+import unicodedata
 
 
 def split_camel_hashtag(s: str) -> str:
@@ -59,7 +60,7 @@ def replace_emoticons(text: str) -> str:
     # If nothing changed, return original (keeps exact equality for tests)
     return out
 
-def demojize_to_tokens(text: str) -> str:
+def demojise_to_tokens(text: str) -> str:
     """
     Convert emojis to tokens like 'EMOJI_face_with_tears_of_joy' or 'EMOJI_1F602'.
 
@@ -78,6 +79,7 @@ def demojize_to_tokens(text: str) -> str:
         return text
     return out
 
+
 def cap_repeated_letters(text: str) -> str:
     """Cap repeated alphabetical characters to at most three in a row."""
     if not text:
@@ -91,14 +93,24 @@ def cap_repeated_punct(text: str) -> str:
         return text
     return re.sub(r"([!?])\1{3,}", lambda m: m.group(1) * 3, text)
 
-def normalize_whitespace(text: str) -> str:
+
+def normalise_whitespace(text: str) -> str:
     """Collapse all whitespace (spaces, tabs, newlines) to single spaces and strip ends."""
     if text is None:
         return text
     out = re.sub(r"\s+", " ", text).strip()
     return out
 
+def strip_accents(text: str) -> str:
+    """Convert accented characters to their unaccented equivalents."""
+    if not text:
+        return text
+    normalized = unicodedata.normalize("NFKD", text)
+    stripped = "".join(c for c in normalized if not unicodedata.combining(c))
+    return stripped
+
 _URL_RE = re.compile(r"https?://\S+|www\.\S+")
+
 
 def remove_urls(texts):
     """Given a list of strings, remove URLs from each string and return the new list."""
@@ -112,8 +124,10 @@ def remove_urls(texts):
         out.append(_URL_RE.sub("", t))
     return out
 
+
 _USER_RE = re.compile(r"@\w+")
 _HASHTAG_RE = re.compile(r"#(\w+)")
+
 
 def preprocess_tweet(text: str) -> str:
     """
@@ -143,7 +157,7 @@ def preprocess_tweet(text: str) -> str:
     text = replace_emoticons(text)
 
     # Convert emojis
-    text = demojize_to_tokens(text)
+    text = demojise_to_tokens(text)
 
     # Replace hashtags: keep case for camel-case (split words), keep lowercase as-is
     def _hashtag_repl(m):
@@ -159,7 +173,8 @@ def preprocess_tweet(text: str) -> str:
     text = cap_repeated_letters(text)
     text = cap_repeated_punct(text)
 
-    # Normalize whitespace
-    text = normalize_whitespace(text)
+    # Strip accents and normalize whitespace
+    text = strip_accents(text)
+    text = normalise_whitespace(text)
 
     return text

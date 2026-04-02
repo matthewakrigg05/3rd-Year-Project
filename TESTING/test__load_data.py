@@ -1,7 +1,7 @@
 import csv
 import unittest
 from pathlib import Path
-from src.data_loading import *
+from src.utils.data_loading import *
 import pandas as pd
 
 
