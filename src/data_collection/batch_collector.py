@@ -42,27 +42,30 @@ def collect_and_save(words: List[str],
     for word in words:
         all_texts = []
 
+        # first attempt to fetch tweets; if this fails we skip the word
         try:
             print(f"Fetching tweets for: {word}")
             response = client.fetch_tweets(word)
-            texts = extract_english_text(response)
-            cleaned_texts = remove_mentions(texts)
-            cleaned_texts = collapse_whitespace(cleaned_texts)
-            
-            # Add word context to each text
-            for text in cleaned_texts:
-                all_texts.append({
-                    'word': word,
-                    'text': text
-                })
-
-            append_to_csv(all_texts, output_file)
-            
-            time.sleep(delay)  # Rate limiting
-            
         except Exception as e:
             print(f"Error fetching for '{word}': {e}")
             continue
+
+        # process the response outside of the fetch-exception handler
+        texts = extract_english_text(response)
+        cleaned_texts = remove_mentions(texts)
+        cleaned_texts = collapse_whitespace(cleaned_texts)
+        
+        # Add word context to each text
+        for text in cleaned_texts:
+            all_texts.append({
+                'word': word,
+                'text': text
+            })
+
+        # attempt to write to disk; let failures propagate so callers can handle them
+        append_to_csv(all_texts, output_file)
+
+        time.sleep(delay)  # Rate limiting
 
 
 def append_to_csv(data: List[Dict[str, Any]], output_file: str):

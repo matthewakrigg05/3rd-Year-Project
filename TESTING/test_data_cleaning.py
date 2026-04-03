@@ -49,23 +49,23 @@ class TestReplaceEmoticons(unittest.TestCase):
         out = replace_emoticons("hi:)")
         self.assertIn(" EMOTICON_smile ", out)
         
-class TestDemojizeToTokens(unittest.TestCase):
+class TestDemojiseToTokens(unittest.TestCase):
     def test_converts_known_emoji_to_token(self):
         # This requires the `emoji` package to be installed.
-        out = demojize_to_tokens("fun 😂")
+        out = demojise_to_tokens("fun 😂")
         self.assertIn("EMOJI_", out)
 
     def test_leaves_plain_text_unchanged(self):
-        out = demojize_to_tokens("plain text")
+        out = demojise_to_tokens("plain text")
         self.assertEqual(out, "plain text")
 
     def test_multiple_emojis(self):
-        out = demojize_to_tokens("😂🔥")
+        out = demojise_to_tokens("😂🔥")
         # We expect at least two emoji tokens
         self.assertGreaterEqual(out.count("EMOJI_"), 2)
 
     def test_emoji_token_format_has_no_colons(self):
-        out = demojize_to_tokens("😂")
+        out = demojise_to_tokens("😂")
         self.assertNotIn(":", out)
         self.assertIn("EMOJI_", out)
 
@@ -106,21 +106,21 @@ class TestCapRepeatedPunct(unittest.TestCase):
     def test_other_punct_unchanged(self):
         self.assertEqual(cap_repeated_punct("...."), "....")  # only ! and ? are handled
 
-class TestNormalizeWhitespace(unittest.TestCase):
+class TestNormaliseWhitespace(unittest.TestCase):
     def test_collapses_spaces(self):
-        self.assertEqual(normalize_whitespace("a   b"), "a b")
+        self.assertEqual(normalise_whitespace("a   b"), "a b")
 
     def test_collapses_tabs_newlines(self):
-        self.assertEqual(normalize_whitespace("a\tb\nc"), "a b c")
+        self.assertEqual(normalise_whitespace("a\tb\nc"), "a b c")
 
     def test_strips_ends(self):
-        self.assertEqual(normalize_whitespace("  a b  "), "a b")
+        self.assertEqual(normalise_whitespace("  a b  "), "a b")
 
     def test_empty_string(self):
-        self.assertEqual(normalize_whitespace(""), "")
+        self.assertEqual(normalise_whitespace(""), "")
 
     def test_only_whitespace(self):
-        self.assertEqual(normalize_whitespace("   \n\t  "), "")
+        self.assertEqual(normalise_whitespace("   \n\t  "), "")
 
 
 class TestURLRemoval(unittest.TestCase):
@@ -130,6 +130,15 @@ class TestURLRemoval(unittest.TestCase):
             remove_urls(text),
             ["Check this link:  and "]
         )
+
+
+class TestStripAccents(unittest.TestCase):
+    def test_strip_accents(self):
+        self.assertEqual(strip_accents("café"), "cafe")
+        self.assertEqual(strip_accents("déjà vu"), "deja vu")
+
+    def test_strip_accents_unchanged(self):
+        self.assertEqual(strip_accents("hello world"), "hello world")
 
 
 class TestPreprocessTweet(unittest.TestCase):
@@ -178,12 +187,21 @@ class TestPreprocessTweet(unittest.TestCase):
         out = preprocess_tweet(inp)
         self.assertEqual(out, "hello")
 
-    def test_whitespace_is_normalized(self):
+    def test_whitespace_is_normalised(self):
         inp = "a   b\tc\n\n@x  https://t.co/x"
         out = preprocess_tweet(inp)
         self.assertEqual(out.count("  "), 0)  # no double spaces
         self.assertIn("USER", out)
         self.assertIn("URL", out)
+
+    def test_accent_normalization(self):
+        inp = "café déjà vu"
+        out = preprocess_tweet(inp)
+        self.assertIn("cafe", out)
+        self.assertIn("deja", out)
+        self.assertIn("vu", out)
+        self.assertNotIn("é", out)
+        self.assertNotIn("à", out)
 
     def test_end_to_end_example(self):
         inp = "RT @John: I LOOOOVE this movie 😂😂!!! https://t.co/xyz #BestDayEver"

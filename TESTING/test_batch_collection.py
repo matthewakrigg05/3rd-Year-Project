@@ -65,10 +65,14 @@ class TestBatchCollector(unittest.TestCase):
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
 
-    @patch('builtins.open', side_effect=IOError("Disk full"))
-    def test_collect_data_handles_csv_write_error(self, mock_open):
+    @patch('src.data_collection.twitter_client.TwitterClient.fetch_tweets')
+    @patch('builtins.open', side_effect=OSError("Disk full"))
+    def test_collect_data_handles_csv_write_error(self, mock_open, mock_fetch):
+        # When writing to the CSV fails we expect the exception to bubble up
+        # make sure fetch returns at least one tweet so append_to_csv is called
+        mock_fetch.return_value = {"tweets": [{"text": "something", "lang": "en"}]}
         words = ["test"]
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             collect_and_save(words, "output.csv")
 
     def test_count_csv_rows(self):
