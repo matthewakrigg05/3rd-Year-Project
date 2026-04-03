@@ -1,8 +1,3 @@
 .env
-data.csv
-pyvenv.cfg
-notes.txt
-.vscode/
-__pycache__/
 collected_tweets.csv
 cleaned_tweets.csv
