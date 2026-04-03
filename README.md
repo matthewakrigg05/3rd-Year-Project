@@ -30,6 +30,5 @@ costs of these models.
    Note: Use `run_python.bat` instead of `python` to prevent __pycache__ creation, or set `PYTHONDONTWRITEBYTECODE=1` in your environment.
 
 Project Structure Overview:
- - EXPLORE_REQUIREMENTS: Initial exploring and testing out APIs/Libraries manually to see what will need to go into the unit tests
  - TESTING: The unit tests before development
  - src: What is developed and used as part of the projects outputs
