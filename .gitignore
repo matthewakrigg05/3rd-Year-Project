@@ -1,3 +1,4 @@
 .env
 collected_tweets.csv
 cleaned_tweets.csv
+classified_tweets.csv
