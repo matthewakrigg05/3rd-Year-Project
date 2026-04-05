@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import tempfile
 import csv
-from src.tweet_classifier_ui.tweet_classifier_ui import TweetClassifier
+from tweet_classifier_ui import TweetClassifier
 
 class TestTweetClassifier(unittest.TestCase):
 
