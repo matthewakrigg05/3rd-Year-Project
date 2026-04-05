@@ -4,11 +4,14 @@ import random
 import os
 import csv
 
+classified_path = 'classified_tweets.csv'
+
 class TweetClassifier:
+   
     def __init__(self):
         self.df = pd.read_csv('cleaned_tweets.csv')
         self.classified = set()
-        classified_path = 'classified_tweets.csv'
+        
         if os.path.exists(classified_path):
             classified_df = pd.read_csv(classified_path)
             if 'cleaned_text' in classified_df.columns:
@@ -47,7 +50,6 @@ class TweetClassifier:
         self.tweet_label.config(text=self.current_tweet)
 
     def classify(self, sentiment):
-        classified_path = 'classified_tweets.csv'
         with open(classified_path, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             if not os.path.exists(classified_path) or os.stat(classified_path).st_size == 0:
