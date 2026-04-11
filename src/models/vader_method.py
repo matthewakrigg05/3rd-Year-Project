@@ -14,10 +14,6 @@ Key Features:
     - Outputs ternary sentiment labels: positive, neutral, or negative
     - No pre-training required; uses fixed linguistic rules
 
-References:
-    VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social
-    Media Text by Hutto & Gilbert (2014)
-
 @author: MA
 """
 from typing import Dict

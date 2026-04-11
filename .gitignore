@@ -2,3 +2,4 @@
 collected_tweets.csv
 cleaned_tweets.csv
 classified_tweets.csv
+model_run_time.csv
