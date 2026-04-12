@@ -303,6 +303,7 @@ class TweetClassifier:
     def save_timing_data(self) -> None:
         """
         Save timing and performance data to CSV (including GPU information).
+        Appends new data to existing CSV without overwriting.
         """
         logger.info(f"\nSaving timing data to {self.output_timing}...")
         
@@ -313,9 +314,14 @@ class TweetClassifier:
                 "cuda_available", "cuda_device", "gpu_memory_total_mb"
             ]
             
-            with open(self.output_timing, 'w', newline='', encoding='utf-8') as f:
+            # Check if file exists and has data
+            file_exists = self.output_timing.exists() and self.output_timing.stat().st_size > 0
+            
+            with open(self.output_timing, 'a', newline='', encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
-                writer.writeheader()
+                # Only write header if file is new or empty
+                if not file_exists:
+                    writer.writeheader()
                 writer.writerows(self.timing_data)
         
         logger.info(f"Saved {len(self.timing_data)} timing records to {self.output_timing}")

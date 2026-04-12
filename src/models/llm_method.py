@@ -80,9 +80,32 @@ class GPT2SentimentAnalyser(SentimentAnalyserBase):
         """Return the model identifier."""
         return "GPT-2"
 
+    def _sanitize_text(self, text: str, max_length: int = 150) -> str:
+        """
+        Sanitize and truncate input text to prevent CUDA errors.
+        
+        Removes problematic characters and limits length to prevent tokenization
+        issues that cause GPU assertion failures.
+        
+        Args:
+            text (str): Raw input text
+            max_length (int): Maximum character length (default 150)
+            
+        Returns:
+            str: Sanitized and truncated text
+        """
+        # Remove control characters and excessive whitespace
+        text = ''.join(char for char in text if ord(char) >= 32 or char in '\n\t')
+        # Normalize whitespace
+        text = ' '.join(text.split())
+        # Truncate to max_length - more aggressive to prevent GPU issues
+        if len(text) > max_length:
+            text = text[:max_length].rsplit(' ', 1)[0]  # Cut at word boundary
+        return text.strip() if text else "neutral"
+
     def analyse(self, text: str) -> Dict[str, float]:
         """
-        Analyse sentiment using GPT-2 text generation.
+        Analyse sentiment using GPT-2 text generation with GPU fallback.
         
         This method performs sentiment analysis by:
         1. Creating a sentiment prompt with the input text
@@ -107,31 +130,79 @@ class GPT2SentimentAnalyser(SentimentAnalyserBase):
             raise ValueError("Input text must be a non-empty string")
 
         try:
-            # Create sentiment analysis prompt
-            prompt = f"The sentiment of '{text}' is"
+            # Sanitize input to prevent CUDA errors from problematic text
+            safe_text = self._sanitize_text(text)
+            
+            # Create sentiment analysis prompt with sanitized text
+            prompt = f"The sentiment of '{safe_text}' is"
             
             # Tokenise the prompt with attention mask
             inputs = self.tokenizer(
                 prompt,
                 return_tensors="pt",
-                return_attention_mask=True
+                return_attention_mask=True,
+                truncation=True,
+                max_length=256  # Reduced from 512 for safety
             )
             input_ids = inputs["input_ids"].to(self.device)
             attention_mask = inputs["attention_mask"].to(self.device)
             
+            # Validate input tensors before generation
+            if input_ids.shape[1] == 0:
+                raise ValueError("Tokenized input is empty after processing")
+            
             # Generate text continuation without gradient calculation
-            with torch.no_grad():
-                output_ids = self.model.generate(
-                    input_ids,
-                    attention_mask=attention_mask,
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    max_length=input_ids.shape[1] + 20,  # Generate 20 additional tokens
-                    num_return_sequences=1,
-                    no_repeat_ngram_size=2,  # Prevent token repetition
-                    top_k=50,  # Restrict to top 50 likely next tokens
-                    top_p=0.95,  # Nucleus sampling for diversity
-                    temperature=0.9  # Moderate randomness for varied output
-                )
+            try:
+                # Clear CUDA cache to prevent memory fragmentation issues
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                
+                with torch.no_grad():
+                    output_ids = self.model.generate(
+                        input_ids,
+                        attention_mask=attention_mask,
+                        pad_token_id=self.tokenizer.eos_token_id,
+                        max_length=min(input_ids.shape[1] + 15, 256),  # Reduced max_length
+                        num_return_sequences=1,
+                        no_repeat_ngram_size=2,
+                        top_k=40,
+                        top_p=0.9,
+                        temperature=0.7,  # More conservative
+                        repetition_penalty=1.0,
+                        length_penalty=1.0
+                    )
+            except RuntimeError as cuda_error:
+                # If GPU generation fails, try CPU as fallback
+                if "cuda" in str(cuda_error).lower():
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"GPU generation failed, falling back to CPU: {str(cuda_error)[:100]}")
+                    
+                    # Move model to CPU temporarily
+                    self.model.to("cpu")
+                    input_ids_cpu = input_ids.to("cpu")
+                    attention_mask_cpu = attention_mask.to("cpu")
+                    
+                    try:
+                        with torch.no_grad():
+                            output_ids = self.model.generate(
+                                input_ids_cpu,
+                                attention_mask=attention_mask_cpu,
+                                pad_token_id=self.tokenizer.eos_token_id,
+                                max_length=min(input_ids_cpu.shape[1] + 15, 256),
+                                num_return_sequences=1,
+                                no_repeat_ngram_size=2,
+                                top_k=40,
+                                top_p=0.9,
+                                temperature=0.7,
+                                repetition_penalty=1.0,
+                                length_penalty=1.0
+                            )
+                    finally:
+                        # Move model back to GPU
+                        self.model.to(self.device)
+                else:
+                    raise
             
             # Decode generated tokens to natural text
             generated_text = self.tokenizer.decode(
@@ -173,6 +244,11 @@ class GPT2SentimentAnalyser(SentimentAnalyserBase):
                 "label": result_obj.label
             }
 
+        except RuntimeError as e:
+            # Handle CUDA-specific errors
+            if "cuda" in str(e).lower() or "assert" in str(e).lower():
+                raise RuntimeError(f"GPT-2 GPU error (persistent): {str(e)}")
+            raise RuntimeError(f"GPT-2 analysis failed: {str(e)}")
         except Exception as e:
             raise RuntimeError(f"GPT-2 analysis failed: {str(e)}")
 
