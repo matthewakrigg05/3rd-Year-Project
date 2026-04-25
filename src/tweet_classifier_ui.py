@@ -10,15 +10,15 @@ class TweetClassifier:
    
     def __init__(self):
         self.df = pd.read_csv(input_path)
-        self.labeled = set()
+        self.labelled = set()
         
         if os.path.exists(output_path):
             output_df = pd.read_csv(output_path)
             if 'tweet_text' in output_df.columns:
-                self.labeled = set(output_df['tweet_text'])
+                self.labelled = set(output_df['tweet_text'])
         
         # Find remaining tweets to label
-        self.remaining = [i for i in range(len(self.df)) if self.df.iloc[i]['tweet_text'] not in self.labeled]
+        self.remaining = [i for i in range(len(self.df)) if self.df.iloc[i]['tweet_text'] not in self.labelled]
         self.current_index = 0
 
         self.root = tk.Tk()
@@ -48,7 +48,7 @@ class TweetClassifier:
 
     def next_tweet(self):
         if self.current_index >= len(self.remaining):
-            self.tweet_label.config(text="All tweets have been labeled!")
+            self.tweet_label.config(text="All tweets have been labelled!")
             self.counter_label.config(text="Complete!")
             return
         
@@ -74,7 +74,7 @@ class TweetClassifier:
             row_data = list(self.current_row.values) + [sentiment]
             writer.writerow(row_data)
         
-        self.labeled.add(self.current_tweet)
+        self.labelled.add(self.current_tweet)
         self.current_index += 1
         self.next_tweet()
 
