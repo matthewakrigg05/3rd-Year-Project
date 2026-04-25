@@ -59,11 +59,11 @@ def save(fig, stem):
     name = f"{_fig_counter[0]:02d}_{stem}.png"
     fig.savefig(os.path.join(OUT_DIR, name), bbox_inches="tight")
     plt.close(fig)
-    print(f"  ✓  {name}")
+    print(f"Saved: {name}")
 
 
 def styled_table(ax, df, col_labels=None):
-    """Render a DataFrame as a nicely styled table"""
+    """Render a DataFrame as a nicely styled table - look good for the diss"""
     col_labels = col_labels or list(df.columns)
     t = ax.table(
         cellText=df.values,
@@ -82,10 +82,8 @@ def styled_table(ax, df, col_labels=None):
             cell.set_facecolor("#f4f4f4")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # LOAD DATA
-# ══════════════════════════════════════════════════════════════════════════════
-print("Loading data …")
+print("Loading data ...")
 rt_df  = pd.read_csv(os.path.join(BASE_DIR, "model_run_time.csv"))
 cls_df = pd.read_csv(os.path.join(BASE_DIR, "classified_tweets.csv"),
                      on_bad_lines="skip", engine="python")
@@ -97,20 +95,18 @@ lab_df["sampled_model"] = lab_df["sampled_model"].str.strip().str.lower()
 
 N_CLS = len(cls_df)
 N_LAB = len(lab_df)
-print(f"  Classified tweets : {N_CLS:,}")
-print(f"  Labelled tweets   : {N_LAB:,}")
-print(f"  Runtime records   : {len(rt_df)}")
-print(f"\n  Human label breakdown:")
+print(f"Classified tweets : {N_CLS:,}")
+print(f"Labelled tweets   : {N_LAB:,}")
+print(f"Runtime records   : {len(rt_df)}")
+print(f"\nHuman label breakdown:")
 print(lab_df["human_label"].value_counts().to_string())
-print(f"\n  Labelled sample source:")
+print(f"\nLabelled sample source:")
 print(lab_df["sampled_model"].value_counts().to_string())
 
 y_true = lab_df["human_label"]
 
-# ══════════════════════════════════════════════════════════════════════════════
 # SECTION 1 — RUNTIME / THROUGHPUT
-# ══════════════════════════════════════════════════════════════════════════════
-print("\n[1/9] Runtime analysis …")
+print("\nRuntime analysis ...")
 
 rt_stats = (
     rt_df.groupby("model")
@@ -124,7 +120,7 @@ rt_stats["tps_err"] = rt_stats["tps"] * (rt_stats["std_s"] / rt_stats["mean_s"])
 rt_stats["display"] = rt_stats["model"]          # already title-cased in CSV
 rt_stats = rt_stats.sort_values("mean_s")        # fastest → slowest
 
-# --- Figure 1: Runtime bar chart (time + throughput) ---
+# Figure 1: Runtime bar chart (time + throughput)
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 fig.suptitle("Model Runtime Comparison  (3 runs each, 49,447 tweets)",
              fontsize=13, fontweight="bold")
@@ -155,7 +151,7 @@ for bar, val in zip(bars2, rt_stats["tps"]):
 plt.tight_layout()
 save(fig, "runtime_comparison")
 
-# --- Figure 2: Runtime summary table ---
+# Figure 2: Runtime summary table
 rt_tbl = rt_stats[["display", "mean_s", "std_s", "tps", "n"]].copy()
 rt_tbl.columns = ["Model", "Mean Time (s)", "Std Dev (s)", "Tweets / sec", "Tweets Processed"]
 rt_tbl["Mean Time (s)"]      = rt_tbl["Mean Time (s)"].round(2)
@@ -169,10 +165,10 @@ styled_table(ax, rt_tbl)
 ax.set_title("Runtime Statistics  (3 runs)", fontweight="bold", pad=10)
 save(fig, "runtime_table")
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 2 — CLASSIFICATION DISTRIBUTION (full corpus)
-# ══════════════════════════════════════════════════════════════════════════════
-print("[2/9] Classification distribution …")
+
+# SECTION 2 — CLASSIFICATION DISTRIBUTION
+
+print("Classification distribution ...")
 
 dist = pd.DataFrame(
     {MODEL_LABELS[m]: cls_df[f"{m}_class_1"]
@@ -181,7 +177,7 @@ dist = pd.DataFrame(
      for m in MODELS}
 ).T
 
-print("\n  Sentiment distribution (%) across full corpus:")
+print("\nSentiment distribution (%) across full corpus:")
 print(dist.round(1).to_string())
 
 fig, ax = plt.subplots(figsize=(9, 5))
@@ -205,10 +201,10 @@ ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.0f}%"))
 plt.tight_layout()
 save(fig, "classification_distribution")
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 3 — SCORE DISTRIBUTIONS (full corpus)
-# ══════════════════════════════════════════════════════════════════════════════
-print("[3/9] Score distributions …")
+
+# SECTION 3 — SCORE DISTRIBUTIONS
+
+print("Score distributions ...")
 
 # Histograms
 fig, axes = plt.subplots(2, 2, figsize=(13, 9))
@@ -249,10 +245,10 @@ ax.set_ylabel("Sentiment Score")
 plt.tight_layout()
 save(fig, "score_violin")
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 4 — MODEL AGREEMENT (full corpus)
-# ══════════════════════════════════════════════════════════════════════════════
-print("[4/9] Model agreement …")
+
+# SECTION 4 — MODEL AGREEMENT 
+
+print("Model agreement ...")
 
 mlabels  = [MODEL_LABELS[m] for m in MODELS]
 agree_df = pd.DataFrame({lbl: cls_df[f"{m}_class_1"]
@@ -265,7 +261,7 @@ for m1, m2 in combinations(mlabels, 2):
     pw.loc[m1, m2] = v
     pw.loc[m2, m1] = v
 
-print("\n  Pairwise agreement (%):")
+print("\nPairwise agreement (%):")
 print(pw.round(1).to_string())
 
 # Heatmap
@@ -315,14 +311,14 @@ plt.tight_layout()
 save(fig, "model_consensus")
 
 full_agree_pct = consensus.get(4, 0) / N_CLS * 100
-print(f"\n  Full consensus (all 4 agree):  "
+print(f"\nFull consensus (all 4 agree):  "
       f"{consensus.get(4, 0):,}  ({full_agree_pct:.1f}%)")
 
 # Agreement per-label breakdown for tweets where all 4 agree
 all4 = agree_df[agree_df["_n_agree"] == 4].copy()
 all4["agreed_label"] = all4[mlabels[0]]
 agreed_dist = all4["agreed_label"].value_counts(normalize=True) * 100
-print("  Label distribution where all 4 models agree:")
+print("Label distribution where all 4 models agree:")
 print(agreed_dist.round(1).to_string())
 
 fig, ax = plt.subplots(figsize=(7, 4))
@@ -337,10 +333,10 @@ ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.0f}%"))
 plt.tight_layout()
 save(fig, "consensus_label_breakdown")
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 5 — CLASSIFICATION METRICS vs HUMAN LABELS
-# ══════════════════════════════════════════════════════════════════════════════
-print("[5/9] Classification metrics vs human labels …")
+
+print("Classification metrics vs human labels ...")
 
 rows = []
 for m in MODELS:
@@ -357,7 +353,7 @@ for m in MODELS:
     })
 metrics_df = pd.DataFrame(rows)
 
-print("\n  Metrics summary:")
+print("\nMetrics summary:")
 print(metrics_df[["Model","Accuracy","Precision (Macro)","Recall (Macro)","F1 (Macro)"]].to_string(index=False))
 
 # Grouped bar chart (macro + weighted side-by-side)
@@ -409,10 +405,10 @@ ax.set_title(f"Classification Metrics vs Human Labels  (n = {N_LAB:,})",
              fontweight="bold", pad=10)
 save(fig, "metrics_table")
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 6 — CONFUSION MATRICES
-# ══════════════════════════════════════════════════════════════════════════════
-print("[6/9] Confusion matrices …")
+
+print("Confusion matrices ...")
 
 fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 fig.suptitle("Confusion Matrices vs Human Labels", fontsize=14, fontweight="bold")
@@ -435,10 +431,10 @@ for ax, m in zip(axes.flat, MODELS):
 plt.tight_layout()
 save(fig, "confusion_matrices")
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 7 — PER-CLASS METRICS
-# ══════════════════════════════════════════════════════════════════════════════
-print("[7/9] Per-class metrics …")
+
+print("Per-class metrics...")
 
 per_class = {}
 for m in MODELS:
@@ -491,10 +487,10 @@ ax.set_xticklabels([c.replace(" ", "\n") for c in col_order],
 plt.tight_layout()
 save(fig, "per_class_metrics_heatmap")
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 8 — SAMPLING BIAS CHECK
-# ══════════════════════════════════════════════════════════════════════════════
-print("[8/9] Sampling bias check …")
+
+print("Sampling bias check...")
 
 # Human label distribution per sampled_model
 pivot = (lab_df.groupby(["sampled_model", "human_label"])
@@ -546,7 +542,7 @@ for sm in sorted(lab_df["sampled_model"].unique()):
         })
 bias_df = pd.DataFrame(bias_rows)
 
-print("\n  Accuracy by sampling source (rows = source, cols = classifier):")
+print("\nAccuracy by sampling source (rows = source, cols = classifier):")
 print(bias_df.pivot(index="Sampled From", columns="Classifier",
                     values="Accuracy").round(3).to_string())
 
@@ -580,10 +576,9 @@ styled_table(ax, bias_tbl)
 ax.set_title("Accuracy per Classifier × Sampling Source", fontweight="bold", pad=10)
 save(fig, "sampling_bias_accuracy_table")
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 9 — RADAR CHART (multi-dimensional summary)
-# ══════════════════════════════════════════════════════════════════════════════
-print("[9/9] Radar chart …")
+
+# SECTION 9 — RADAR CHART 
+print("Radar chart...")
 
 tps_max    = rt_stats["tps"].max()
 tps_lookup = dict(zip(rt_stats["display"], rt_stats["tps"] / tps_max))
@@ -626,23 +621,15 @@ ax.legend(loc="upper right", bbox_to_anchor=(1.38, 1.12), fontsize=9)
 plt.tight_layout()
 save(fig, "radar_chart")
 
-
-# ══════════════════════════════════════════════════════════════════════════════
 # CONSOLE SUMMARY
-# ══════════════════════════════════════════════════════════════════════════════
-print("\n" + "=" * 65)
-print("  ANALYSIS COMPLETE")
-print("=" * 65)
-print(f"  {_fig_counter[0]} figures saved to:  {OUT_DIR}")
-print()
-print("  ── Key Findings ──────────────────────────────────────────")
+print("ANALYSIS COMPLETE")
+print(f"{_fig_counter[0]} figures saved to:  {OUT_DIR}")
 best_acc = metrics_df.loc[metrics_df["Accuracy"].idxmax()]
 best_f1  = metrics_df.loc[metrics_df["F1 (Macro)"].idxmax()]
 fastest  = rt_stats.iloc[0]   # already sorted fastest first
 slowest  = rt_stats.iloc[-1]
-print(f"  Highest accuracy : {best_acc['Model']}  ({best_acc['Accuracy']:.4f})")
-print(f"  Highest F1 macro : {best_f1['Model']}  ({best_f1['F1 (Macro)']:.4f})")
-print(f"  Fastest model    : {fastest['display']}  ({fastest['tps']:,.0f} tweets/s)")
-print(f"  Slowest model    : {slowest['display']}  ({slowest['tps']:.1f} tweets/s)")
-print(f"  Full consensus   : {consensus.get(4,0):,} / {N_CLS:,} tweets  ({consensus.get(4,0)/N_CLS*100:.1f}%)")
-print("=" * 65)
+print(f"Highest accuracy : {best_acc['Model']}  ({best_acc['Accuracy']:.4f})")
+print(f"Highest F1 macro : {best_f1['Model']}  ({best_f1['F1 (Macro)']:.4f})")
+print(f"Fastest model    : {fastest['display']}  ({fastest['tps']:,.0f} tweets/s)")
+print(f"Slowest model    : {slowest['display']}  ({slowest['tps']:.1f} tweets/s)")
+print(f"Full consensus   : {consensus.get(4,0):,} / {N_CLS:,} tweets  ({consensus.get(4,0)/N_CLS*100:.1f}%)")
