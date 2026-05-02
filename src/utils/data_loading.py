@@ -7,18 +7,9 @@ PathLike = Union[str, Path]
 def load_csv_to_dataframe(path: PathLike, 
                           usecols: list[str] | None = None) -> pd.DataFrame:
     """
-    Load the CSV into a pandas DataFrame.
+    Load a CSV file into a pandas DataFrame.
 
-    Parameters:
-    - path: path to the CSV file (string or Path)
-    - usecols: optional list of column names to read (helps memory).
-
-    Returns:
-    - pandas.DataFrame
-
-    Notes:
-    - Uses `low_memory=False` and `dtype=str` to avoid mixed-type inference and
-      to preserve text content.
+    Uses dtype=str and low_memory=False to avoid mixed-type inference.
     """
     p = Path(path)
     if not p.exists():
@@ -40,19 +31,9 @@ def load_csv_to_dataframe(path: PathLike,
 def iter_csv_chunks(path: PathLike, 
                     chunksize: int = 5000) -> Iterator[pd.DataFrame]:
     """
-    Lazily iterate over the CSV file yielding DataFrame chunks.
+    Lazily iterate over a CSV file in chunks.
 
-    Parameters:
-    - path: path to the CSV file
-    - chunksize: number of rows per yielded DataFrame
-    - usecols: optional list of columns to read
-
-    Yields:
-    - pandas.DataFrame of at most `chunksize` rows
-
-    This is the recommended approach for processing large CSV files that
-    don't fit comfortably into memory. Each chunk will have the same
-    columns as read by pandas.
+    Useful for large files that don't fit comfortably in memory.
     """
     p = Path(path)
     if not p.exists():
@@ -71,21 +52,9 @@ def iter_csv_chunks(path: PathLike,
 def load_dataset(path: PathLike, 
                  chunksize: int | None = None) -> pd.DataFrame:
     """
-    Load the whole dataset into a pandas DataFrame.
+    Load the full dataset into a DataFrame.
 
-    If `chunksize` is None the function delegates to `load_csv_to_dataframe`.
-    If `chunksize` is provided the CSV is read in chunks via
-    `iter_csv_chunks` and concatenated. Use `chunksize` when the file is
-    large but you still need a single DataFrame object; note this will
-    temporarily hold each chunk in memory while concatenating.
-
-    Parameters:
-    - path: path to the CSV file
-    - chunksize: optional chunk size for reading with `iter_csv_chunks`
-    - usecols: optional column subset to load
-
-    Returns:
-    - pandas.DataFrame containing the entire dataset (excluding header)
+    If chunksize is provided, reads in chunks via iter_csv_chunks and concatenates.
     """
     if chunksize is None:
         return load_csv_to_dataframe(path)
@@ -106,13 +75,6 @@ def load_dataset(path: PathLike,
 
 def stream_dataset(path: PathLike, 
                    chunksize: int = 5000) -> Iterator[pd.DataFrame]:
-    """
-    Stream the CSV dataset as DataFrame chunks. Yields each chunk from
-    `iter_csv_chunks` without accumulating them in memory.
-
-    Use this when processing can be done per-chunk (e.g., cleaning,
-    feature extraction) and you want to avoid building a single large
-    DataFrame.
-    """
+    """Stream the CSV as DataFrame chunks without accumulating all rows in memory."""
     for chunk in iter_csv_chunks(path, chunksize=chunksize):
         yield chunk

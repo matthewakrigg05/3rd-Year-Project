@@ -2,19 +2,7 @@ import os
 from pathlib import Path
 
 def load_wordlist(filename: str) -> list[str]:
-    """
-    Load a list of words from a text file, one word per line.
-    
-    Args:
-        filename: Path to the wordlist file (relative to project root)
-    
-    Returns:
-        List of words/phrases
-        
-    Raises:
-        FileNotFoundError: If the file doesn't exist
-        IOError: If there's an issue reading the file
-    """
+    """Load words from a text file (one per line) relative to the project root."""
     project_root = Path(__file__).parent.parent.parent
     file_path = project_root / filename
     

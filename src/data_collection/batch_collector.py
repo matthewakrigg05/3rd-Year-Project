@@ -9,15 +9,7 @@ from .data_cleaning import remove_mentions, collapse_whitespace
 from .wordlist_loader import load_wordlist
 
 def count_csv_rows(csv_file: str) -> int:
-    """
-    Count the number of data rows in a CSV file (excluding header).
-    
-    Args:
-        csv_file: Path to the CSV file
-        
-    Returns:
-        Number of rows
-    """
+    """Return the number of data rows in a CSV file (excluding header)."""
     if not Path(csv_file).exists():
         return 0
     
@@ -28,14 +20,7 @@ def count_csv_rows(csv_file: str) -> int:
 def collect_and_save(words: List[str], 
                      output_file: str, 
                      delay: float = 0.2):
-    """
-    Collect tweets for each word in the list, process them, and append to CSV.
-    
-    Args:
-        words: List of search terms
-        output_file: Path to output CSV file
-        delay: Delay between requests to avoid rate limits
-    """
+    """Fetch tweets for each word and append results to the output CSV."""
     client = TwitterClient()
 
     
@@ -69,13 +54,7 @@ def collect_and_save(words: List[str],
 
 
 def append_to_csv(data: List[Dict[str, Any]], output_file: str):
-    """
-    Append processed data to CSV.
-    
-    Args:
-        data: List of dicts with 'word' and 'text' keys
-        output_file: Output CSV path
-    """
+    """Append a list of {'word', 'text'} dicts to the output CSV."""
     if not data:
         return
     

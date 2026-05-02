@@ -105,8 +105,8 @@ def strip_accents(text: str) -> str:
     """Convert accented characters to their unaccented equivalents."""
     if not text:
         return text
-    normalized = unicodedata.normalize("NFKD", text)
-    stripped = "".join(c for c in normalized if not unicodedata.combining(c))
+    normalised = unicodedata.normalize("NFKD", text)
+    stripped = "".join(c for c in normalised if not unicodedata.combining(c))
     return stripped
 
 _URL_RE = re.compile(r"https?://\S+|www\.\S+")
@@ -139,7 +139,7 @@ def preprocess_tweet(text: str) -> str:
     - Convert emoticons to tokens
     - Convert emojis to tokens
     - Convert hashtags to 'HASHTAG <text>' (split camel case when appropriate)
-    - Cap repeated letters and punctuation and normalize whitespace
+    - Cap repeated letters and punctuation and normalise whitespace
     """
     if not text:
         return text
@@ -173,7 +173,7 @@ def preprocess_tweet(text: str) -> str:
     text = cap_repeated_letters(text)
     text = cap_repeated_punct(text)
 
-    # Strip accents and normalize whitespace
+    # Strip accents and normalise whitespace
     text = strip_accents(text)
     text = normalise_whitespace(text)
 

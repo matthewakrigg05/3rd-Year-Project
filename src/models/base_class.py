@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from src.sa_models.sentiment_result import SentimentResult
+from models.sentiment_result import SentimentResult
 
 
 # Abstract base class for the analysis methods
@@ -17,11 +17,7 @@ class SentimentAnalyserBase(ABC):
 
     @abstractmethod
     def analyse(self, text: str) -> Dict[str, float]:
-        """
-        Analyses the text and returns the sentiment score, alongside the original text.
-        :param text:
-        :return:
-        """
+        """Analyse the text and return a result dict with 'text', 'score', and 'label'."""
         pass
 
     @staticmethod
@@ -31,10 +27,9 @@ class SentimentAnalyserBase(ABC):
         neg_threshold: float = -0.05
     ) -> str:
         """
-        Convert a continuous sentiment score into a label.
+        Convert a sentiment score to a categorical label.
 
-        Default thresholds are aligned with VADER conventions,
-        but can be overridden if required.
+        Default thresholds match VADER conventions but can be overridden.
         """
         if score >= pos_threshold:
             return "positive"
